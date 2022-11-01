@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,7 +36,7 @@ namespace TODOs.Api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TODOs.Api", Version = "v1" });
             });
 
-            services.AddDbContext<TodoDbContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("MSSQL")));
+            services.AddDbContext<TodoDbContext>(op => op.UseSqlServer(Configuration.GetConnectionString("MSSQL")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

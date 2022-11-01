@@ -23,17 +23,24 @@ namespace TODOs.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Data.Entities.TodoList>> GetAllAsync()
+        public async Task<IEnumerable<Data.Entities.List>> GetAllAsync()
         {
-
-            return await _dbContext.Lists.ToListAsync();
-            //return await Task.FromResult(new List<string> { "Hello", "Orifjon" });
+            return await _dbContext.Lists
+                .AsNoTracking()
+                .AsQueryable()
+                .ToListAsync();
         }
 
         [HttpGet("{listId}")]
-        public async Task<string> GetByIdAsync(int listId)
+        public async Task<ActionResult<Data.Entities.List>> GetByIdAsync(int listId)
         {
-            return await Task.FromResult($"Hello {listId}");
+            var item = await _dbContext.Lists.FirstOrDefaultAsync(prop => prop.Id == listId);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(item);
         }
 
         [HttpPut("{listId}")]

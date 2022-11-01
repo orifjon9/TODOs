@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TODOs.Data.Entities
 {
-    public class TodoList
+    public class List
     {
         public int Id { get; set; }
         public string Label { get; set; }

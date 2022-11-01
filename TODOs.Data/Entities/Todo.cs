@@ -7,7 +7,7 @@ namespace TODOs.Data.Entities
         public string Label { get; set; }
         public bool Status { get; set; }
         public int ListId { get; set; }
-        public TodoList List { get; set; }
+        public List List { get; set; }
     }
 }
 
