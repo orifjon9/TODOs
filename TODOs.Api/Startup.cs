@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using TODOs.Api.Repositories;
+using TODOs.Api.Repositories.Contracts;
 using TODOs.Data;
 
 namespace TODOs.Api
@@ -37,6 +39,8 @@ namespace TODOs.Api
             });
 
             services.AddDbContext<TodoDbContext>(op => op.UseSqlServer(Configuration.GetConnectionString("MSSQL")));
+            services.AddScoped<ITodoRepository, TodoRepository>()
+               .AddScoped<IListRepository, ListRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -6,6 +6,9 @@ using TODOs.Data;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TODOs.Api.Repositories.Contracts;
+using TODOs.Api.Repositories;
+using TODOs.Api.Models.Requests;
 
 namespace TODOs.Api.Controllers
 {
@@ -13,46 +16,28 @@ namespace TODOs.Api.Controllers
     [Route("v1/lists")]
     public class ListsController: ControllerBase
     {
-        private readonly TodoDbContext _dbContext;
+        private readonly IListRepository _listRepository;
         private readonly ILogger<ListsController> _logger;
 
-        public ListsController(TodoDbContext todoDbContext, ILogger<ListsController> logger)
+        public ListsController(IListRepository listRepository, ILogger<ListsController> logger)
         {
-            _dbContext = todoDbContext;
+            _listRepository = listRepository;
             _logger = logger;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Data.Entities.List>> GetAllAsync()
-        {
-            return await _dbContext.Lists
-                .AsNoTracking()
-                .AsQueryable()
-                .ToListAsync();
-        }
+        public Task<List<Data.Entities.List>> GetAllAsync()
+            => _listRepository.GetAllAsync();
 
-        [HttpGet("{listId}")]
-        public async Task<ActionResult<Data.Entities.List>> GetByIdAsync(int listId)
+        [HttpPost]
+        public async Task<Data.Entities.List> AddAsync([FromBody]CreateListRequest payload)
         {
-            var item = await _dbContext.Lists.FirstOrDefaultAsync(prop => prop.Id == listId);
-            if (item == null)
+            var entity = new Data.Entities.List
             {
-                return NotFound();
-            }
+                Label = payload.Label
+            };
 
-            return Ok(item);
-        }
-
-        [HttpPut("{listId}")]
-        public async Task<string> UpdateAsync(int listId)
-        {
-            return await Task.FromResult($"Hello {listId}");
-        }
-
-        [HttpDelete("{listId}")]
-        public async Task<string> DeleteAsync(int listId)
-        {
-            return await Task.FromResult($"Hello {listId}");
+            return await _listRepository.AddAsync(entity);
         }
     }
 }

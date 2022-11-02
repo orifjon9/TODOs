@@ -6,8 +6,8 @@ namespace TODOs.Data.Entities
         public int Id { get; set; }
         public string Label { get; set; }
         public bool Status { get; set; }
-        public int ListId { get; set; }
-        public List List { get; set; }
+        public int? ListId { get; set; }
+        public virtual List List { get; set; }
     }
 }
 

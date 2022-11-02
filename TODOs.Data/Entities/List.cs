@@ -8,7 +8,7 @@ namespace TODOs.Data.Entities
         public int Id { get; set; }
         public string Label { get; set; }
 
-        public List<Todo> Todos { get; set; } = new List<Todo>();
+        public virtual List<Todo> Todos { get; set; } = new List<Todo>();
     }
 }
 

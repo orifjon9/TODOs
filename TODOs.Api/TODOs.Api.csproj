@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.17" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,5 +17,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+    <None Remove="Domains\Contracts\" />
+    <None Remove="Models\" />
+    <None Remove="Models\Requests\" />
+    <None Remove="Models\Responses\" />
+    <None Remove="Microsoft.AspNetCore.JsonPatch" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Repositories\Contracts\" />
+    <Folder Include="Models\" />
+    <Folder Include="Models\Requests\" />
+    <Folder Include="Models\Responses\" />
   </ItemGroup>
 </Project>
