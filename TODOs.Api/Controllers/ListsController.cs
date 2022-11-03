@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using TODOs.Api.Repositories.Contracts;
 using TODOs.Api.Repositories;
 using TODOs.Api.Models.Requests;
+using Microsoft.AspNetCore.Http;
+using TODOs.Api.Exceptions;
 
 namespace TODOs.Api.Controllers
 {
@@ -17,27 +19,40 @@ namespace TODOs.Api.Controllers
     public class ListsController: ControllerBase
     {
         private readonly IListRepository _listRepository;
-        private readonly ILogger<ListsController> _logger;
+        private readonly AutoMapper.IMapper _mapper;
 
-        public ListsController(IListRepository listRepository, ILogger<ListsController> logger)
+        public ListsController(IListRepository listRepository, AutoMapper.IMapper mapper)
         {
             _listRepository = listRepository;
-            _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public Task<List<Data.Entities.List>> GetAllAsync()
-            => _listRepository.GetAllAsync();
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<List<Models.Responses.ListViewModel>> GetAllAsync()
+            => _mapper.Map<List<Models.Responses.ListViewModel>>(await _listRepository.GetAllAsync());
+
+        [HttpGet("{listId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<Models.Responses.ListViewModel>> GetByIdAsync([FromRoute] int listId)
+        {
+            var foundEntity = await _listRepository.GetByIdAsync(listId);
+            if (foundEntity == null)
+            {
+                throw new NotFoundException("A list was not found");
+            }
+            return _mapper.Map<Models.Responses.ListViewModel>(foundEntity);
+        }
 
         [HttpPost]
-        public async Task<Data.Entities.List> AddAsync([FromBody]CreateListRequest payload)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<Models.Responses.ListViewModel>> AddAsync([FromBody]CreateListRequest payload)
         {
-            var entity = new Data.Entities.List
-            {
-                Label = payload.Label
-            };
-
-            return await _listRepository.AddAsync(entity);
+            var entity = _mapper.Map<Data.Entities.List>(payload);
+            var createdEntity = _mapper.Map<Models.Responses.ListViewModel>(await _listRepository.AddAsync(entity));
+            return CreatedAtAction(nameof(GetByIdAsync), new { listId = createdEntity.Id }, createdEntity);
         }
     }
 }

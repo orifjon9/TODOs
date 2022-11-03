@@ -1,6 +1,12 @@
-Add notfound message model
-Add exception handler
-Add Automapper
-Add logs
 Add Integration tests
 Remove hard coded connection string in dbcontext
+
+Have Done
+1. Use Entity Framework
+2. Models
+3. Add Repositories
+4. Add Automapper
+5. Add notfound message model
+6. Add exception handler
+7. Add logs
+8.

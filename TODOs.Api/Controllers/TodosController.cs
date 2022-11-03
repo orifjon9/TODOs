@@ -10,6 +10,8 @@ using TODOs.Api.Models.Requests;
 using TODOs.Data.Entities;
 using TODOs.Api.Repositories;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Http;
+using TODOs.Api.Exceptions;
 
 namespace TODOs.Api.Controllers
 {
@@ -18,81 +20,91 @@ namespace TODOs.Api.Controllers
     public class TodosController : ControllerBase
     {
         private readonly ITodoRepository _todoRepository;
-        private readonly ILogger<ListsController> _logger;
+        private readonly AutoMapper.IMapper _mapper;
 
-        public TodosController(ITodoRepository todoRepository, ILogger<ListsController> logger)
+        public TodosController(ITodoRepository todoRepository, AutoMapper.IMapper mapper)
         {
             _todoRepository = todoRepository;
-            _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet("lists")]
-        public async Task<List<Data.Entities.Todo>> GetAllAsync()
-        {
-            return await _todoRepository.SearchAsync(true, null);
-        }
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<List<Models.Responses.TodoViewModel>> GetAllAsync()
+            => _mapper.Map<List<Models.Responses.TodoViewModel>>(await _todoRepository.SearchAsync(true, null));
 
         [HttpGet("lists/{listId}")]
-        public async Task<List<Data.Entities.Todo>> GetByListIdAsync([FromRoute] int listId)
-        {
-            return await _todoRepository.SearchAsync(null, listId);
-        }
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<List<Models.Responses.TodoViewModel>> GetByListIdAsync([FromRoute] int listId)
+            => _mapper.Map<List<Models.Responses.TodoViewModel>>(await _todoRepository.SearchAsync(null, listId));
 
         [HttpPost]
-        public async Task<Data.Entities.Todo> AddAsync([FromBody] CreateUpdateTodoRequest payload)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<Models.Responses.TodoViewModel>> AddAsync([FromBody] CreateUpdateTodoRequest payload)
         {
-            var entity = new Data.Entities.Todo
-            {
-                Label = payload.Label,
-                ListId = payload.ListId,
-                Status = payload.Status
-            };
-
-            return await _todoRepository.AddAsync(entity);
+            var entity = _mapper.Map<Data.Entities.Todo>(payload);
+            var createdEntity = await _todoRepository.AddAsync(entity);
+            return CreatedAtAction(nameof(GetByIdAsync), new { todoId = createdEntity.Id }, createdEntity);
         }
 
-        [HttpPut("{todoId}")]
-        public async Task<ActionResult<Data.Entities.Todo>> UpdateAsync([FromRoute] int todoId,
-            [FromBody] CreateUpdateTodoRequest payload)
+        [HttpGet("{todoId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Models.Responses.TodoViewModel>> GetByIdAsync([FromRoute] int todoId)
         {
-            var entity = await _todoRepository.GetByIdAsync(todoId);
-            if (entity == null)
+            var foundEntity = await _todoRepository.GetByIdAsync(todoId);
+            if (foundEntity == null)
             {
-                return NotFound();
+                throw new NotFoundException("A todo was not found");
             }
 
-            entity = new Data.Entities.Todo
+            return _mapper.Map<Models.Responses.TodoViewModel>(foundEntity);
+        }
+        [HttpPut("{todoId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Models.Responses.TodoViewModel>> UpdateAsync([FromRoute] int todoId,
+            [FromBody] CreateUpdateTodoRequest payload)
+        {
+            var foundEntity = await _todoRepository.GetByIdAsync(todoId);
+            if (foundEntity == null)
             {
-                Label = payload.Label,
-                ListId = payload.ListId,
-                Status = payload.Status
-            };
+                throw new NotFoundException("A todo was not found");
+            }
 
-            return await _todoRepository.UpdateAsync(entity);
+            var entity = _mapper.Map<Data.Entities.Todo>(payload);
+            entity.Id = foundEntity.Id;
+
+            return _mapper.Map<Models.Responses.TodoViewModel>(await _todoRepository.UpdateAsync(entity));
         }
 
         [HttpPatch("{todoId}")]
-        public async Task<ActionResult<Data.Entities.Todo>> PatchAsync([FromRoute] int todoId,
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Models.Responses.TodoViewModel>> PatchAsync([FromRoute] int todoId,
             [FromBody] JsonPatchDocument<Data.Entities.Todo> payload)
         {
-            var entity = await _todoRepository.GetByIdAsync(todoId);
-            if (entity == null)
+            var foundEntity = await _todoRepository.GetByIdAsync(todoId);
+            if (foundEntity == null)
             {
-                return NotFound();
+                throw new NotFoundException("A todo was not found");
             }
 
-            payload.ApplyTo(entity);
-
-            return await _todoRepository.UpdateAsync(entity);
+            payload.ApplyTo(foundEntity);    
+            return _mapper.Map<Models.Responses.TodoViewModel>(await _todoRepository.UpdateAsync(foundEntity));
         }
 
         [HttpDelete("{todoId}")]
-        public async Task<ActionResult<Data.Entities.Todo>> DeleteAsync([FromRoute] int todoId)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> DeleteAsync([FromRoute] int todoId)
         {
             var entity = await _todoRepository.GetByIdAsync(todoId);
             if (entity == null)
             {
-                return NotFound();
+                throw new NotFoundException("A todo was not found");
             }
 
             await _todoRepository.DeleteAsync(entity);
