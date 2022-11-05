@@ -48,8 +48,8 @@ namespace TODOs.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlServer("Server=localhost,1439; Database=TODO;User=sa; Password=todos-123");
+        // protected override void OnConfiguring(DbContextOptionsBuilder options)
+        //     => options.UseSqlServer("Server=localhost,1439; Database=TODO;User=sa; Password=todos-123");
     }
 }
 

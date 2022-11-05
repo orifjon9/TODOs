@@ -1,5 +1,4 @@
 Add Integration tests
-Remove hard coded connection string in dbcontext
 
 Have Done
 1. Use Entity Framework
@@ -9,4 +8,5 @@ Have Done
 5. Add notfound message model
 6. Add exception handler
 7. Add logs
-8.
+8. Remove hard coded connection string in dbcontext
+9.

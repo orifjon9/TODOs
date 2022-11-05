@@ -55,6 +55,7 @@ namespace TODOs.Api
                     logger.Log(logLevel, problemDetails.Title);
                     logger.Log(logLevel, problemDetails.Detail);
                 };
+                
             });
             services.AddControllers(options =>
             {
